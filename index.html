@@ -229,6 +229,12 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--go
       <div class="mdesc">Lấy tại <a href="https://console.anthropic.com" target="_blank" style="color:var(--brown-m)">console.anthropic.com</a> — dùng cho AI đọc ảnh. <strong>Nếu đã có Apps Script URL, bỏ qua mục này</strong> (proxy qua Apps Script không bị CORS).</div>
       <input class="minput" id="cfg-apikey" type="password" placeholder="sk-ant-...">
       <div class="mdesc" style="margin-top:6px;background:var(--gold-l);border-radius:6px;padding:8px;font-size:11px">
+        💡 <strong>Apps Script proxy (khuyên dùng):</strong> Thêm đoạn sau vào Apps Script của bạn để AI đọc ảnh không bị lỗi CORS:<br>
+        <code style="display:block;margin-top:4px;font-family:monospace;font-size:10px;color:var(--brown-m);word-break:break-all">
+        case 'claudeVision': var r=UrlFetchApp.fetch('https://api.anthropic.com/v1/messages',{method:'post',headers:{'x-api-key':e.anthropicPayload?e.apiKey||PropertiesService.getScriptProperties().getProperty('ANTHROPIC_KEY'):'','anthropic-version':'2023-06-01','Content-Type':'application/json'},payload:JSON.stringify(e.anthropicPayload),muteHttpExceptions:true}); return ContentService.createTextOutput(JSON.stringify({result:JSON.parse(r.getContentText()).content[0].text})).setMimeType(ContentService.MimeType.JSON);
+        </code>
+        Hoặc lưu API Key vào Script Properties với tên <code>ANTHROPIC_KEY</code>.
+      </div>
     </div>
     <div id="cfg-err" class="merr"></div>
     <button class="mbtn" onclick="doSetup()">✓ Kết nối & bắt đầu</button>
