@@ -2597,7 +2597,8 @@ async function loadScheduledEmails(){
   if(!C.apiUrl){ document.getElementById('schedule-list').innerHTML='<div class="empty2">Cần API URL để xem danh sách này</div>'; return; }
   document.getElementById('schedule-list').innerHTML='<div class="empty2">Đang tải...</div>';
   try {
-    const r = await fetch(C.apiUrl + '?action=getScheduledEmails');
+    const url = C.apiUrl + (C.apiUrl.includes('?') ? '&' : '?') + 'action=getScheduledEmails';
+    const r = await fetch(url);
     const data = await r.json();
     scheduledEmails = data.emails || [];
     renderScheduledEmails();
@@ -2608,26 +2609,33 @@ async function loadScheduledEmails(){
 
 function renderScheduledEmails(){
   const container = document.getElementById('schedule-list');
-  document.getElementById('schedule-count').textContent = scheduledEmails.length + ' email';
+  const countEl = document.getElementById('schedule-count');
+  if(countEl) countEl.textContent = scheduledEmails.length + ' email';
+  
   if(!scheduledEmails.length){
     container.innerHTML = '<div class="empty2">Chưa có email nào được lên lịch</div>';
     return;
   }
-  container.innerHTML = scheduledEmails.map((e,i)=>`
-    <div class="store-row" style="align-items:flex-start">
+  container.innerHTML = scheduledEmails.map((e,i)=>{
+    // Format date display nicely
+    let dateStr = e.sendDate;
+    if(dateStr && typeof dateStr === 'string' && dateStr.includes('T')) dateStr = dateStr.split('T')[0];
+    
+    return `<div class="store-row" style="align-items:flex-start">
       <div style="flex:1">
         <div style="font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px">
-          ${e.subject} <span class="bdg by2" style="font-size:10px">Chờ gửi</span>
+          ${e.subject || '(Không có tiêu đề)'} <span class="bdg by2" style="font-size:10px">Chờ gửi</span>
         </div>
         <div style="font-size:12px;color:var(--gray);margin-top:4px">
-          📧 Tới: <strong>${e.email}</strong> · ⏰ Lúc: <span style="color:var(--brown)">${e.sendTime} ngày ${e.sendDate}</span>
+          📧 Tới: <strong>${e.email || '—'}</strong> · ⏰ Lúc: <span style="color:var(--brown)">${e.sendTime || '00:00'} ngày ${dateStr || '—'}</span>
         </div>
       </div>
       <div style="display:flex;gap:6px">
         <button class="btn bg" style="font-size:12px;padding:3px 9px" onclick="openEditSchedule(${i})">✏️</button>
         <button class="btn brd" style="font-size:12px;padding:3px 9px" onclick="cancelScheduledEmail('${e.id}')">🗑️ Huỷ</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function openEditSchedule(i){
